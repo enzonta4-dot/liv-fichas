@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⭐ Las Fichas de Lív</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFF9F0;
+  --orange: #FF7043;
+  --orange-light: #FFCCBC;
+  --gold: #FFD600;
+  --green: #43A047;
+  --green-bg: #E8F5E9;
+  --red: #E53935;
+  --red-bg: #FFEBEE;
+  --purple: #7B1FA2;
+  --purple-bg: #F3E5F5;
+  --card: #FFFFFF;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --radius: 20px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 20px 16px 40px;
+}
+.wrap { max-width: 500px; margin: 0 auto; }
+
+/* SETUP SCREEN */
+#setup-screen {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 90vh; gap: 16px; text-align: center;
+}
+#setup-screen h1 { font-family:'Baloo 2',cursive; font-size:2.2rem; color:var(--orange); }
+#setup-screen p { color:#999; font-size:0.9rem; max-width:320px; line-height:1.5; }
+.setup-card {
+  background:#fff; border-radius:20px; box-shadow:var(--shadow);
+  padding:28px 24px; width:100%; max-width:380px;
+}
+.setup-card h2 { font-family:'Baloo 2',cursive; color:#444; font-size:1.1rem; margin-bottom:12px; }
+.input-row { display:flex; gap:8px; }
+.inp {
+  flex:1; border:2px solid #eee; border-radius:12px;
+  padding:10px 14px; font-family:'Nunito',sans-serif;
+  font-size:0.9rem; outline:none; transition:border-color 0.2s;
+}
+.inp:focus { border-color:var(--orange); }
+.btn-primary {
+  background:var(--orange); color:#fff; border:none;
+  border-radius:12px; padding:10px 18px; font-family:'Nunito',sans-serif;
+  font-weight:700; font-size:0.9rem; cursor:pointer;
+  transition:transform 0.1s, box-shadow 0.1s;
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,112,67,0.35); }
+.btn-primary:active { transform:scale(0.97); }
+.divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:#ccc; font-size:0.82rem; }
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:#eee; }
+.setup-error { color:var(--red); font-size:0.82rem; margin-top:6px; }
+
+/* MAIN APP */
+#app-screen { display:none; }
+
+/* HEADER */
+.hdr { text-align:center; margin-bottom:20px; }
+.hdr h1 { font-family:'Baloo 2',cursive; font-size:2rem; font-weight:800; color:var(--orange); text-shadow:2px 2px 0 var(--orange-light); }
+.hdr p { color:#bbb; font-size:0.82rem; margin-top:2px; }
+.sync-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#ccc; margin-right:5px; transition:background 0.3s; }
+.sync-dot.ok { background:var(--green); }
+.sync-dot.busy { background:var(--gold); }
+
+/* SALDO */
+.saldo-card {
+  background:var(--card); border-radius:var(--radius);
+  box-shadow:var(--shadow); border:3px solid var(--gold);
+  padding:22px 24px; text-align:center; margin-bottom:20px;
+}
+.saldo-label { font-size:0.72rem; letter-spacing:2px; color:#bbb; text-transform:uppercase; }
+.saldo-num {
+  font-family:'Baloo 2',cursive; font-size:4rem; font-weight:800;
+  color:var(--orange); line-height:1.1;
+  transition:transform 0.3s;
+}
+.saldo-num.bump { animation:bump 0.4s ease; }
+@keyframes bump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.22)} }
+.saldo-sub { font-size:0.82rem; color:#ccc; margin-top:2px; }
+.hist-btn {
+  margin-top:10px; background:none; border:2px solid #eee;
+  border-radius:30px; padding:4px 18px; font-size:0.8rem;
+  color:#aaa; cursor:pointer; font-family:'Nunito',sans-serif;
+}
+.hist-btn:hover { border-color:var(--orange); color:var(--orange); }
+
+/* HISTORIAL */
+.hist-panel {
+  background:var(--card); border-radius:16px; box-shadow:var(--shadow);
+  padding:16px; margin-bottom:20px; max-height:230px; overflow-y:auto;
+}
+.hist-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:7px 0; border-bottom:1px solid #f5f5f5;
+  font-size:0.83rem; color:#555;
+}
+.hist-row:last-child { border:none; }
+.hist-pts { font-family:'Baloo 2',cursive; font-weight:800; font-size:0.95rem; }
+.hist-hora { color:#ccc; font-size:0.7rem; }
+.hist-empty { text-align:center; color:#ddd; padding:20px; }
+
+/* TABS */
+.tabs { display:flex; gap:8px; margin-bottom:16px; }
+.tab {
+  flex:1; padding:9px 4px; border-radius:30px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:0.8rem;
+  cursor:pointer; transition:all 0.15s; border:2.5px solid;
+}
+.tab-gana   { border-color:var(--green); }
+.tab-pierde { border-color:var(--red); }
+.tab-canje  { border-color:var(--purple); }
+.tab-gana.active   { background:var(--green);  color:#fff; }
+.tab-pierde.active { background:var(--red);    color:#fff; }
+.tab-canje.active  { background:var(--purple); color:#fff; }
+.tab-gana:not(.active)   { background:#fff; color:var(--green); }
+.tab-pierde:not(.active) { background:#fff; color:var(--red); }
+.tab-canje:not(.active)  { background:#fff; color:var(--purple); }
+
+/* GRID */
+.grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+.ficha-btn {
+  background:var(--card); border:2px solid #f0f0f0; border-radius:16px;
+  padding:14px 10px; display:flex; flex-direction:column;
+  align-items:center; gap:5px; cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,0,0,0.06); font-family:'Nunito',sans-serif;
+  transition:transform 0.12s, box-shadow 0.12s;
+}
+.ficha-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.1); }
+.ficha-btn:active { transform:scale(0.97); }
+.ficha-btn:disabled { opacity:0.3; cursor:not-allowed; transform:none; box-shadow:0 3px 12px rgba(0,0,0,0.06); }
+.ficha-emoji { font-size:1.8rem; }
+.ficha-nombre { font-size:0.76rem; font-weight:700; color:#444; text-align:center; line-height:1.2; }
+.ficha-pts { border-radius:20px; padding:2px 12px; font-weight:800; font-size:0.88rem; }
+.pts-green  { background:var(--green-bg);  color:var(--green); }
+.pts-red    { background:var(--red-bg);    color:var(--red); }
+.pts-purple { background:var(--purple-bg); color:var(--purple); }
+
+/* FOOTER */
+.footer { text-align:center; margin-top:4px; }
+.reset-btn {
+  background:none; border:2px solid #eee; border-radius:30px;
+  padding:6px 18px; font-size:0.76rem; color:#ccc;
+  cursor:pointer; font-family:'Nunito',sans-serif;
+}
+.reset-btn:hover { border-color:#f44; color:#f44; }
+.logout-btn {
+  background:none; border:none; font-size:0.72rem; color:#ddd;
+  cursor:pointer; margin-top:8px; font-family:'Nunito',sans-serif;
+  display:block; margin-left:auto; margin-right:auto;
+}
+.logout-btn:hover { color:#aaa; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(60px);
+  color:#fff; border-radius:30px; padding:12px 28px;
+  font-weight:700; font-size:1rem; z-index:9999;
+  white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.2);
+  transition:transform 0.35s cubic-bezier(.175,.885,.32,1.275), opacity 0.3s;
+  opacity:0; pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+/* CONFETTI */
+.confetti { position:fixed; top:-20px; width:10px; height:14px; border-radius:3px; pointer-events:none; z-index:9998; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══ SETUP ══ -->
+<div id="setup-screen">
+  <h1>⭐ Las Fichas de Lív</h1>
+  <p>Ingresa el código de acceso para continuar.</p>
+
+  <div class="setup-card">
+    <h2>Código de acceso</h2>
+    <div class="input-row">
+      <input class="inp" id="code-input" type="password" placeholder="Código…" maxlength="30" />
+      <button class="btn-primary" onclick="entrar()">Entrar</button>
+    </div>
+    <div class="setup-error" id="code-error"></div>
+
+    <div class="divider">ó</div>
+
+    <h2>Crear nueva tabla</h2>
+    <p style="color:#aaa;font-size:0.82rem;margin-bottom:12px">Elige un código que compartas con tu familia.</p>
+    <div class="input-row">
+      <input class="inp" id="new-code-input" type="text" placeholder="Ej: liv2024" maxlength="30" />
+      <button class="btn-primary" onclick="crear()">Crear</button>
+    </div>
+    <div class="setup-error" id="new-error"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen">
+  <div class="hdr">
+    <h1>⭐ Las Fichas de Lív</h1>
+    <p><span class="sync-dot" id="dot"></span><span id="sync-label">conectando…</span></p>
+  </div>
+
+  <div class="saldo-card">
+    <div class="saldo-label">MIS FICHAS</div>
+    <div class="saldo-num" id="saldo-num">0</div>
+    <div class="saldo-sub">⭐ fichas acumuladas</div>
+    <button class="hist-btn" onclick="toggleHist()">📋 Ver historial</button>
+  </div>
+
+  <div class="hist-panel" id="hist-panel" style="display:none"></div>
+
+  <div class="tabs">
+    <button class="tab tab-gana active" id="tab-gana"   onclick="setTab('gana')">✅ Gana</button>
+    <button class="tab tab-pierde"      id="tab-pierde" onclick="setTab('pierde')">❌ Pierde</button>
+    <button class="tab tab-canje"       id="tab-canje"  onclick="setTab('canje')">🎁 Canjea</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">
+    <button class="reset-btn" onclick="resetTodo()">🔄 Reiniciar todo</button>
+    <button class="logout-btn" onclick="salir()">Cambiar código</button>
+  </div>
+</div>
+
+</div><!-- wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIG — JSONBin.io (free, no auth needed to read/write with X-Master-Key)
+//  Se crea un bin por "código de acceso".
+//  Usamos JSONBin v3 API + un master key embebido (read/write a bins creados con él).
+//
+//  PARA SETUP REAL: crea una cuenta gratuita en jsonbin.io,
+//  reemplaza MASTER_KEY con tu key personal.
+//  La key de abajo es demo — reemplázala.
+// ══════════════════════════════════════════════
+const JSONBIN_API = "https://api.jsonbin.io/v3";
+// ⬇️ REEMPLAZA ESTO con tu X-Master-Key de jsonbin.io (gratis)
+const MASTER_KEY  = "$2a$10$sbaFDCXK3wE.L95Ua1NL7exjU5ApNf6IvHGaWwz7eIeKuK3bDk2QK";
+const INDEX_BIN   = "6a00d538c0954111d803d389";
+
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const ACCIONES_GANA = [
+  {id:"bano",    emoji:"🚽", nombre:"Fue al baño",           pts:5},
+  {id:"comio",   emoji:"🥦", nombre:"Comió bien",             pts:4},
+  {id:"ordeno",  emoji:"🧸", nombre:"Ordenó su cuarto",       pts:4},
+  {id:"lectura", emoji:"📖", nombre:"Hizo su lectura",        pts:5},
+  {id:"baniose", emoji:"🛁", nombre:"Se bañó sola",           pts:3},
+  {id:"durmio",  emoji:"😴", nombre:"Se durmió a tiempo",     pts:3},
+  {id:"bien",    emoji:"😊", nombre:"Se portó muy bien",      pts:5},
+  {id:"limpio",  emoji:"🧹", nombre:"Ayudó a limpiar",        pts:3},
+  {id:"gracias", emoji:"🤝", nombre:"Dijo gracias/por favor", pts:2},
+  {id:"compartio",emoji:"💛",nombre:"Compartió con otros",    pts:3},
+];
+const ACCIONES_PIERDE = [
+  {id:"rabieta", emoji:"😤", nombre:"Rabieta",                pts:-4},
+  {id:"noob",    emoji:"🙅", nombre:"No obedeció",            pts:-3},
+  {id:"noorden", emoji:"🛏️", nombre:"No quiso ordenar",       pts:-3},
+  {id:"nocomer", emoji:"🍽️", nombre:"No quiso comer",         pts:-2},
+  {id:"mentira", emoji:"🤥", nombre:"Dijo mentira",           pts:-5},
+  {id:"golpeo",  emoji:"💢", nombre:"Golpeó / mordió",        pts:-5},
+  {id:"nobano",  emoji:"🚫", nombre:"Ignoró el baño",         pts:-3},
+  {id:"lloro",   emoji:"😢", nombre:"Lloró sin razón",        pts:-2},
+];
+const CANJES = [
+  {id:"choco",    emoji:"🍫", nombre:"Chocolatito",           pts:10},
+  {id:"video5",   emoji:"🎵", nombre:"Video música (5 min)",  pts:8},
+  {id:"video10",  emoji:"🎥", nombre:"Video extra (10 min)",  pts:15},
+  {id:"dulce",    emoji:"🍭", nombre:"Dulce especial",        pts:12},
+  {id:"actividad",emoji:"🎨", nombre:"Actividad especial",    pts:20},
+  {id:"sorpresa", emoji:"🌟", nombre:"Premio sorpresa",       pts:25},
+];
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let currentBinId = null;
+let saldo        = 0;
+let historial    = [];
+let currentTab   = "gana";
+let syncTimer    = null;
+let toastTimer   = null;
+
+// ══════════════════════════════════════════════
+//  JSONBIN HELPERS
+// ══════════════════════════════════════════════
+const headers = () => ({
+  "Content-Type": "application/json",
+  "X-Master-Key": MASTER_KEY,
+  "X-Bin-Versioning": "false",
+});
+
+async function binGet(binId) {
+  const r = await fetch(`${JSONBIN_API}/b/${binId}/latest`, {headers: headers()});
+  if (!r.ok) throw new Error("get failed");
+  const j = await r.json();
+  return j.record;
+}
+async function binSet(binId, data) {
+  const r = await fetch(`${JSONBIN_API}/b/${binId}`, {
+    method:"PUT", headers: headers(), body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error("set failed");
+  return r.json();
+}
+async function binCreate(data) {
+  const r = await fetch(`${JSONBIN_API}/b`, {
+    method:"POST", headers: headers(), body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error("create failed");
+  const j = await r.json();
+  return j.metadata.id;
+}
+
+// Index bin: { "codigo": "binId", ... }
+async function getIndex() {
+  try { return await binGet(INDEX_BIN); }
+  catch { return {}; }
+}
+async function saveIndex(idx) {
+  await binSet(INDEX_BIN, idx);
+}
+
+// ══════════════════════════════════════════════
+//  SETUP: ENTRAR / CREAR
+// ══════════════════════════════════════════════
+async function entrar() {
+  const code = document.getElementById("code-input").value.trim().toLowerCase();
+  const err  = document.getElementById("code-error");
+  if (!code) { err.textContent = "Ingresa un código."; return; }
+  err.textContent = "Buscando…";
+  try {
+    const idx = await getIndex();
+    if (!idx[code]) { err.textContent = "Código no encontrado. ¿Quieres crearlo?"; return; }
+    currentBinId = idx[code];
+    localStorage.setItem("liv_code", code);
+    localStorage.setItem("liv_bin",  currentBinId);
+    err.textContent = "";
+    await cargarYMostrar();
+  } catch(e) {
+    err.textContent = "Error de conexión. Verifica tu internet.";
+  }
+}
+
+async function crear() {
+  const code = document.getElementById("new-code-input").value.trim().toLowerCase();
+  const err  = document.getElementById("new-error");
+  if (!code || code.length < 3) { err.textContent = "Mínimo 3 caracteres."; return; }
+  err.textContent = "Creando…";
+  try {
+    const idx = await getIndex();
+    if (idx[code]) { err.textContent = "Ese código ya existe. Usa 'Entrar'."; return; }
+    const binId = await binCreate({saldo:0, historial:[]});
+    idx[code] = binId;
+    await saveIndex(idx);
+    currentBinId = binId;
+    localStorage.setItem("liv_code", code);
+    localStorage.setItem("liv_bin",  binId);
+    err.textContent = "";
+    saldo = 0; historial = [];
+    mostrarApp();
+  } catch(e) {
+    err.textContent = "Error al crear. ¿Está configurada la API key?";
+    console.error(e);
+  }
+}
+
+async function cargarYMostrar() {
+  setSync("busy", "cargando…");
+  const data = await binGet(currentBinId);
+  saldo     = data.saldo     || 0;
+  historial = data.historial || [];
+  mostrarApp();
+}
+
+function salir() {
+  localStorage.removeItem("liv_code");
+  localStorage.removeItem("liv_bin");
+  currentBinId = null;
+  clearInterval(syncTimer);
+  document.getElementById("app-screen").style.display = "none";
+  document.getElementById("setup-screen").style.display = "flex";
+}
+
+// ══════════════════════════════════════════════
+//  APP
+// ══════════════════════════════════════════════
+function mostrarApp() {
+  document.getElementById("setup-screen").style.display = "none";
+  document.getElementById("app-screen").style.display   = "block";
+  renderSaldo();
+  renderGrid();
+  renderHist();
+  setSync("ok", "conectado");
+  clearInterval(syncTimer);
+  syncTimer = setInterval(syncRemote, 9000);
+}
+
+async function syncRemote() {
+  try {
+    setSync("busy", "actualizando…");
+    const data = await binGet(currentBinId);
+    // Solo actualizar si el saldo remoto es diferente (otro dispositivo cambió algo)
+    if (data.saldo !== saldo || JSON.stringify(data.historial) !== JSON.stringify(historial)) {
+      saldo     = data.saldo     || 0;
+      historial = data.historial || [];
+      renderSaldo();
+      renderGrid();
+      renderHist();
+    }
+    setSync("ok", "conectado");
+  } catch {
+    setSync("", "sin conexión");
+  }
+}
+
+async function guardar() {
+  try {
+    setSync("busy", "guardando…");
+    await binSet(currentBinId, {saldo, historial});
+    setSync("ok", "guardado ✓");
+    setTimeout(() => setSync("ok","conectado"), 1500);
+  } catch {
+    setSync("", "error al guardar");
+  }
+}
+
+function setSync(state, label) {
+  const dot = document.getElementById("dot");
+  dot.className = "sync-dot" + (state ? " "+state : "");
+  document.getElementById("sync-label").textContent = label;
+}
+
+// ── REGISTRAR ACCIÓN ────────────────────────
+async function registrar(accion, tipo) {
+  const pts = tipo === "canje" ? -accion.pts : accion.pts;
+  saldo = Math.max(0, saldo + pts);
+  historial.unshift({
+    nombre: accion.nombre, pts,
+    tipo, hora: new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}),
+  });
+  if (historial.length > 60) historial.pop();
+  renderSaldo(true);
+  renderGrid();
+  renderHist();
+  if (tipo === "gana") showToast(`+${accion.pts} ⭐  ${accion.nombre}`, "#43A047");
+  else if (tipo === "pierde") showToast(`${pts} ⭐  ${accion.nombre}`, "#E53935");
+  else showToast(`🎁 ${accion.nombre}`, "#7B1FA2");
+  if (tipo === "gana" && accion.pts >= 4) confetti();
+  await guardar();
+}
+
+// ── RENDER SALDO ────────────────────────────
+function renderSaldo(bump) {
+  const el = document.getElementById("saldo-num");
+  el.textContent = saldo;
+  if (bump) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+}
+
+// ── RENDER GRID ─────────────────────────────
+function setTab(t) {
+  currentTab = t;
+  ["gana","pierde","canje"].forEach(k => {
+    const el = document.getElementById("tab-"+k);
+    el.classList.toggle("active", k === t);
+  });
+  renderGrid();
+}
+
+function renderGrid() {
+  const items = currentTab==="gana" ? ACCIONES_GANA : currentTab==="pierde" ? ACCIONES_PIERDE : CANJES;
+  const ptsClass = currentTab==="gana" ? "pts-green" : currentTab==="pierde" ? "pts-red" : "pts-purple";
+  const g = document.getElementById("grid");
+  g.innerHTML = items.map(a => {
+    const disabled = currentTab==="canje" && saldo < a.pts;
+    const label = currentTab==="gana" ? `+${a.pts}⭐` : currentTab==="pierde" ? `${a.pts}⭐` : `${a.pts}⭐`;
+    return `<button class="ficha-btn" ${disabled?"disabled":""} onclick="registrar({id:'${a.id}',emoji:'${a.emoji}',nombre:'${a.nombre}',pts:${a.pts}},'${currentTab}')">
+      <span class="ficha-emoji">${a.emoji}</span>
+      <span class="ficha-nombre">${a.nombre}</span>
+      <span class="ficha-pts ${ptsClass}">${label}</span>
+    </button>`;
+  }).join("");
+}
+
+// ── HISTORIAL ───────────────────────────────
+let histVisible = false;
+function toggleHist() {
+  histVisible = !histVisible;
+  document.getElementById("hist-panel").style.display = histVisible ? "block" : "none";
+  renderHist();
+}
+function renderHist() {
+  if (!histVisible) return;
+  const p = document.getElementById("hist-panel");
+  if (!historial.length) { p.innerHTML = '<div class="hist-empty">Nada todavía 🌟</div>'; return; }
+  p.innerHTML = historial.map(h => {
+    const col = h.tipo==="gana"?"#43A047":h.tipo==="pierde"?"#E53935":"#7B1FA2";
+    const sign = h.pts > 0 ? "+" : "";
+    return `<div class="hist-row">
+      <span>${h.nombre}</span>
+      <span style="display:flex;gap:8px;align-items:center">
+        <span class="hist-pts" style="color:${col}">${sign}${h.pts}⭐</span>
+        <span class="hist-hora">${h.hora}</span>
+      </span>
+    </div>`;
+  }).join("");
+}
+
+// ── RESET ───────────────────────────────────
+async function resetTodo() {
+  if (!confirm("¿Reiniciar todas las fichas e historial de Lív?")) return;
+  saldo = 0; historial = [];
+  renderSaldo(); renderGrid(); renderHist();
+  await guardar();
+  showToast("Reiniciado ✓", "#555");
+}
+
+// ── TOAST ───────────────────────────────────
+function showToast(msg, bg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.background = bg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+// ── CONFETTI ────────────────────────────────
+function confetti() {
+  const cols = ["#FF7043","#FFD600","#43A047","#7B1FA2","#29B6F6","#FF4081"];
+  for (let i=0;i<26;i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.cssText = `left:${Math.random()*100}vw;background:${cols[i%cols.length]};
+      animation:fall ${1.2+Math.random()*1.3}s ${Math.random()*0.5}s linear forwards`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3000);
+  }
+}
+const style = document.createElement("style");
+style.textContent = "@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}";
+document.head.appendChild(style);
+
+// ══════════════════════════════════════════════
+//  AUTO-LOGIN si ya tenía sesión
+// ══════════════════════════════════════════════
+window.addEventListener("DOMContentLoaded", async () => {
+  const savedBin = localStorage.getItem("liv_bin");
+  if (savedBin) {
+    currentBinId = savedBin;
+    try { await cargarYMostrar(); }
+    catch { salir(); }
+  }
+});
+</script>
+</body>
+</html>
